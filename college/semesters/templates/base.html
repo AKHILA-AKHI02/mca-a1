@@ -3,85 +3,16 @@
 <html>
 <head>
     <title>{% block title %}My Website{% endblock %}</title>
-<link rel="stylesheet" href="{% static 'css/Akhila.css' %}">
-
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
+
     <header>
-             <img src="{% static 'img/mtica.png' %}"> 
-               
-             <marquee behavior="alternate" >
-                <h1 style="margin: 0;">MOTHER THERESA INSTITUTE OF COMPUTER APPLICATION </h1>
-                    </marquee>
-<h1>This web page created by Akhila</h1>
-<div class="navbar">
-<div class="dropdown">
-<button class="dropbtn">Semester-I</button>
-<div class="dropdown-content">
-<a href="{% url 'mca101' %}">MCA101</a>
-<a href="{% url 'mca102' %}">MCA102</a>
-<a href="{% url 'mca103' %}">MCA103</a>
-<a href="{% url 'mca104' %}">MCA104</a>
-<a href="{% url 'mca105' %}">MCA105</a>
-<a href="{% url 'mca106' %}">MCA106P</a>
-<a href="{% url 'mca107' %}">MCA107P</a>
-<a href="{% url 'mca108' %}">MCA108P</a>
-</div></div>
-<div class="dropdown">
-<button class="dropbtn">Semester-II</button>
-<div class="dropdown-content">
-<a href="{% url 'mca201' %}">MCA201</a>
-<a href="{% url 'mca202' %}">MCA202</a>
-<a href="{% url 'mca203' %}">MCA203</a>
-<a href="{% url 'mca204' %}">MCA204</a>
-<a href="{% url 'mca205' %}">MCA205</a>
-<a href="{% url 'mca206' %}">MCA206</a>
-<a href="{% url 'mca207' %}">MCA207P</a>
-<a href="{% url 'mca208' %}">MCA208P</a>
-<a href="{% url 'mca209' %}">MCA209P</a>
-</div></div>
-<div class="dropdown">
-<button class="dropbtn">Semester-III</button>
-<div class="dropdown-content">
-<a href="{% url 'mca301' %}">MCA301</a>
-<a href="{% url 'mca302' %}">MCA302</a>
-<a href="{% url 'mca303' %}">MCA303</a>
-<a href="{% url 'mca304' %}">MCA304</a>
-<a href="{% url 'mca305' %}">MCA305</a>
-<a href="{% url 'mca307' %}">MCA307</a>
-<a href="{% url 'mca308' %}">MCA308P</a>
-<a href="{% url 'mca309' %}">MCA309P/a>
-<a href="{% url 'mca310' %}">MCA310P</a>
-</div>
-</div>
-<div class="dropdown">
-<button class="dropbtn">Semester-IV</button>
-<div class="dropdown-content">
-<a href="{% url 'mca401' %}">S/W Testing</a>
-<a href="{% url 'mca402' %}">Internet of Things</a>
-<a href="{% url 'mca403' %}">Major Project Work</a>
-</div>
-</div>
-<div class="dropdown">
-<button class="dropbtn">Faculty</button>
-<div class="dropdown-content">
-<a href="{% url 'm' %}">PRABAKAR NAIDU</a>
-<a href="{% url 'murali' %}">MURALI MOHAN</a>
-
-<a href="{% url 'o' %}">CHANDRA SHAKER</a>
-<a href="{% url 'p' %}">HASYA</a>
-<a href="{% url 'p' %}">PRAVEEN KUMAR</a>
-</div>
-</div>
-<div class="dropdown">
-<button class="dropbtn">About Us</button>
-<div class="dropdown-content">
-<a href="about.html">Information</a>
-
-</div>
-</div>
-</div>
+        <img src="{% static 'img/logo.png' %} "width=100 height=100>
+        <h1>Mother Theresa Institutions of Computer Applications</h1>
+        <h2>palamaner</h2>
     </header>
+
 
     <main>
         {% block content %}
@@ -91,5 +22,6 @@
     <footer>
         <p>&copy; 2025 My Website</p>
     </footer>
+    
 </body>
 </html>

@@ -1,6 +1,6 @@
 h1{
 text-align:center;
-color:pink;
+color:Blue;
 }
 body{
 font-family:Arial, Helvetica, sans-serif;
@@ -57,4 +57,3 @@ background-color: #ddd;
 .dropdown:hover .dropdown-content{
 display: block;
 }
-
