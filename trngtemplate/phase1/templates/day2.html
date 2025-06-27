@@ -1,7 +1,15 @@
+  {% load static %}
+<!DOCTYPE html>
 <html>
-<body bgcolor="skyblue">
-<marquee scrolldelay="100">
-<h1>create a template of phase1 in day2<h1>
-</marquee>
+<head>
+<title>Akhila created a webpage</title>
+<script src="{% static 'js/script.js' %} ">
+</script>
+<body>
+<p>First Number: <input id="txtFirstNumber"></p>
+<p>Second Number: <input id="txtSecondNumber"></p>
+<button onclick="add()">Add </button>
+<button onclick="sub()">Subtract </button>
+<p>ANS=<input id="txtAnswer"></p>
 </body>
 </html>
