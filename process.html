@@ -1,0 +1,146 @@
+
+A complete Django project example that shows how to create a webpage using a shared base.html layout.
+ This includes all the necessary files and code to run the project.
+
+✅ Project Name: myproject
+✅ App Name: myapp
+🔧 1. Create Django Project and App
+Run these commands:
+
+
+django-admin startproject myproject
+cd myproject
+python manage.py startapp myapp
+📁 Folder Structure
+
+myproject/
+├── myproject/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── myapp/
+│   ├── migrations/
+│   ├── templates/
+│   │       └── base.html
+│   │       └── home.html
+│       	└── mca101.html
+│       	└── mca102.html
+│   ├── static/
+│   │   └── css/
+│   │       └── style.css
+│   ├── views.py
+│   ├── urls.py
+|
+│   
+├── manage.py
+
+📄 2. settings.py
+Update settings.py to include:
+
+
+INSTALLED_APPS = [
+    ...
+    'myapp',
+]
+
+
+📄 3. myproject/urls.py
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('myapp/', include('myapp.urls')),  # connect app
+]
+📄 4. myapp/urls.py   
+Create this file:
+
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('home/', views.home, name='home'),
+    #mca101
+    #mca102
+	]
+
+📄 5. myapp/views.py
+
+from django.shortcuts import render
+
+def home(request):
+    return render(request, 'home.html')
+
+#mca101
+#mca102
+
+    
+
+6a. create folders  templates and static
+	inside static, create folders css,img,js 
+
+📄 6b. templates/base.html
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}My Website{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>My Website Header</h1>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 My Website</p>
+    </footer>
+</body>
+</html>
+
+📄 7.1 myapp/templates/home.html
+
+{% extends 'base.html' %}
+
+{% block title %}Home Page{% endblock %}
+
+{% block content %}
+<h2>Welcome to the Home Page!</h2>
+<p>This content is coming from home.html and uses the base layout.</p>
+{% endblock %}
+
+📄 7.2 myapp/templates/mca101.html
+📄 7.3 myapp/templates/mca102.html
+
+
+📄 8. myapp/static/css/style.css
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f5f5f5;
+}
+header, footer {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+}
+main {
+    padding: 20px;
+    background-color: white;
+}
+
+▶️ Run the Project
+
+python manage.py migrate
+python manage.py runserver
+Visit http://127.0.0.1:8000/ to see your homepage using base.html.
