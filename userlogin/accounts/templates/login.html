@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+  <div class="container">
+    <h2>Login</h2>
+    {% for message in messages %}
+      <div class="message">{{ message }}</div>
+    {% endfor %}
+    <form method="POST">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <input type="submit" value="Login">
+    </form>
+    <a href="{% url 'register' %}">Don't have an account? Register</a>
+  </div>
+</body>
+</html>

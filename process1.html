@@ -1,147 +1,73 @@
-Build a Django login project using:
-Manually designed HTML/CSS login page
-SQLite as the database (default in Django)
+<style>
+        /* Optional: hide print button while printing */
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
 
-Full Django backend setup for login
+ <button onclick="window.print()" class="no-print">Print this page</button>
 
-Step 1: Create Django Project
 
-django-admin startproject login_project
-cd login_project
-python manage.py startapp accounts
 
-Step 2: Register the App
-In login_project/settings.py:
 
-INSTALLED_APPS = [
-    ...
-    'accounts',
-]
 
-Step 3: Create the User Model Table
-You’ll use Django’s built-in User model and default SQLite DB.
-python manage.py makemigrations
 
-Step 4: Create URLs
-login_project/urls.py
 
-from django.contrib import admin
-from django.urls import path, include
+If you want to generate a downloadable PDF report, use xhtml2pdf or WeasyPrint.
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('accounts/', include('accounts.urls')),
-]
+Install dependency:
 
-accounts/urls.py
+pip install xhtml2pdf
+
+
+Step-by-step:
+views.py
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+
+def render_to_pdf(template_src, context_dict={}):
+    template = get_template(template_src)
+    html  = template.render(context_dict)
+    result = HttpResponse(content_type='application/pdf')
+    pisa_status = pisa.CreatePDF(html, dest=result)
+    return result if not pisa_status.err else HttpResponse('PDF generation failed')
+
+def pdf_view(request):
+    data = {
+        'name': 'Praveen Choudhary',
+        'course': 'Django Development',
+        'date': '2025-06-27'
+    }
+    return render_to_pdf('pdf_template.html', data)
+
+urls.py
+
 
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('login/', views.login_view, name='login'),
-    path('home/', views.home, name='home'),
-    path('logout/', views.logout_view, name='logout'),
+    path('print-pdf/', views.pdf_view, name='print_pdf'),
 ]
 
-Step 5: Create Views
-accounts/views.py
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+pdf_template.html
 
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user:
-            login(request, user)
-            return redirect('home')
-        else:
-            messages.error(request, 'Invalid Credentials')
-    return render(request, 'accounts/login.html')
-
-@login_required(login_url='login')
-def home(request):
-    return render(request, 'accounts/home.html')
-
-def logout_view(request):
-    logout(request)
-    return redirect('login')
-
-Step 6: Create HTML Templates
-Create folders:
-
-login.html
 
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
-  <style>
-    body {
-      background-color: #f4f4f4;
-      font-family: Arial;
-    }
-    .login-box {
-      width: 300px;
-      padding: 20px;
-      background: white;
-      margin: 100px auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    }
-    input[type="text"], input[type="password"] {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-    }
-    input[type="submit"] {
-      background: #28a745;
-      color: white;
-      padding: 10px;
-      border: none;
-      width: 100%;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>PDF Print</title>
 </head>
 <body>
-  <div class="login-box">
-    <h2>Login</h2>
-    {% if messages %}
-      {% for message in messages %}
-        <p style="color: red;">{{ message }}</p>
-      {% endfor %}
-    {% endif %}
-    <form method="post">
-      {% csrf_token %}
-      <input type="text" name="username" placeholder="Username" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <input type="submit" value="Login">
-    </form>
-  </div>
+    <h1>Student Report</h1>
+    <p>Name: {{ name }}</p>
+    <p>Course: {{ course }}</p>
+    <p>Date: {{ date }}</p>
 </body>
 </html>
-
-
-home.html
-
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Home</title>
-</head>
-<body>
-  <h2>Welcome, {{ request.user.username }}</h2>
-  <p><a href="{% url 'logout' %}">Logout</a></p>
-</body>
-</html>
-
-Step 7: Create Superuser (to test login)
-
-python manage.py createsuperuser
-
-Step 8: Run the Server
-python manage.py runserver
