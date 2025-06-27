@@ -8,5 +8,5 @@ urlpatterns = [
         name = 'delete_employee'),
    path('update_employee/<int:pk>', views.update_employee,
            name = 'update_employee'),     
-# other paths as needed
+   path('print-pdf/', views.pdf_view, name='print_pdf'),
 ]
