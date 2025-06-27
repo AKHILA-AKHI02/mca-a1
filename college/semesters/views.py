@@ -1,6 +1,6 @@
 from django.shortcuts import render
 def home(request):
-    return render(request,'home.html')
+  return render(request,'home.html')
 def about(request):
     return render(request,'about.html')
 def mca101(request):
@@ -69,4 +69,6 @@ def o(request):
     return render(request,'3.html')
 def p(request):
     return render(request,'4.html')
+def murali(request):
+    return render(request,'MURALISIR.html')
 # Create your views here.
