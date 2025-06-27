@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}My Website{% endblock %}</title>
+<style>
+h1 {
+    text-align: center;
+    color: black;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color:skyblue;
+}
+
+header, footer {
+    background-color: skyblue;
+    color: black;
+    padding: 10px;
+}
+
+main {
+    padding: 20px;
+    background-color: skyblue;
+}
+
+/* Navbar */
+.navbar {
+    overflow: hidden;
+    background-color: pink;
+    text-align: center;
+    padding: 10px 0;
+
+}
+.navbar a {
+    float: left;
+    font-size: 16px;
+    color: black; /* Changed from white to black for better contrast */
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+/* Dropdown button */
+.dropdown {
+    float: left;
+    overflow: hidden;
+}
+
+.dropdown .dropbtn {
+    font-size: 16px;
+    border: none;
+    outline: none;
+    color: black; /* Changed from white to black */
+    padding: 14px 16px;
+    background-color: pink; /* Match background */
+    font-family: inherit;
+    margin: 0;
+}
+
+/* Hover effects */
+.navbar a:hover,
+.dropdown:hover .dropbtn {
+    background-color: lightcoral; /* Slightly darker pink for hover */
+}
+
+/* Dropdown content */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+</style>
+
+</head>
+<body>
+    <header>
+
+             <img src="{% static 'img/mtica.png' %}"  alt="mtica" style="width:1000;" >
+
+             <marquee behavior="alternate" >
+                <h1 style="margin: 0;">MOTHER THERESA INSTITUTE OF COMPUTER APPLICATIONS </h1>
+                    </marquee>
+<button>
+<a href="{% url 'logout' %}" alt="right">Logout</a>
+</button><h1>MTICA</h1>
+
+<div class="navbar">
+<div class="dropdown">
+<button class="dropbtn">Semester-1</button>
+<div class="dropdown-content">
+
+
+
+</div></div>
+<div class="dropdown">
+<button class="dropbtn">Semester-2</button>
+<div class="dropdown-content">
+
+</div></div>
+<div class="dropdown">
+<button class="dropbtn">Semester-3</button>
+<div class="dropdown-content">
+
+</div>
+</div>
+<div class="dropdown">
+<button class="dropbtn">Semester-4</button>
+<div class="dropdown-content">
+<a href="{% url 'mca401' %}">S/W Testing</a>
+<a href="{% url 'mca402' %}">Internet of Things</a>
+<a href="{% url 'mca403' %}">Major Project Work</a>
+
+</div>
+</div>
+</div>
+
+</div>
+
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    <footer>
+        <p>&copy; 2025 My Website</p>
+    </footer>
+</body>
+</html>
