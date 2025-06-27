@@ -7,3 +7,11 @@ class EmployeeModel(models.Model):
   
     def __str__(self):  
         return (self.first_name+' '+ self.last_name)
+class FacultyModel(models.Model):  
+    faculty_name = models.CharField(max_length=30)  
+    faculty_course = models.CharField(max_length=30)  
+    mobile = models.CharField(max_length=10, unique=True)  
+    email = models.EmailField()  
+  
+    def __str__(self):  
+        return (self.faculty_name+' '+ self.faculty_course)

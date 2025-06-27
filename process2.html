@@ -1,0 +1,354 @@
+Django project with a login and registration system, using:
+
+	Custom HTML forms (not Django forms)
+	Custom User model with your defined fields
+	SQLite as database
+	No use of Django’s built-in User model or crispy forms
+
+
+PROJECT OVERVIEW
+	Project Name: userlogin
+	App Name: accounts
+	Features: Register, Login, Logout
+	Tools: Django, HTML, CSS, SQLite
+
+STEP 1: CREATE DJANGO PROJECT AND APP
+
+django-admin startproject userlogin
+cd userlogin
+python manage.py startapp accounts
+Add 'accounts' to INSTALLED_APPS in userlogin/settings.py:
+
+INSTALLED_APPS = [
+    ...
+    'accounts',
+]
+
+STEP 2: CREATE MODEL (accounts/models.py)
+
+from django.db import models
+
+class User(models.Model):
+    username = models.CharField(max_length=100, unique=True)
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=100)  # Plaintext for demo; hash in production
+
+    def __str__(self):
+        return self.username
+
+
+Then run migrations:
+python manage.py makemigrations
+python manage.py migrate
+
+STEP 3a: URL CONFIGURATION
+In userlogin/urls.py:
+
+from django.contrib import admin
+from django.urls import path,include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('accounts/',include('accounts.urls')),
+]
+
+STEP 3b: URL CONFIGURATION
+Create urls.py in your app:
+
+from django.urls import path   
+from . import views
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('register/', views.register, name='register'),
+    path('login/', views.user_login, name='login'),
+    path('logout/', views.user_logout, name='logout'),
+]
+
+STEP 4: VIEWS (accounts/views.py)
+
+from django.shortcuts import render, redirect
+from .models import User
+from django.contrib import messages
+
+def home(request):
+    return render(request, 'home.html')
+
+def register(request):
+    if request.method == 'POST':
+        uname = request.POST['username']
+        email = request.POST['email']
+        pwd = request.POST['password']
+
+        if User.objects.filter(username=uname).exists():
+            messages.error(request, 'Username already exists.')
+            return redirect('register')
+
+        User.objects.create(username=uname, email=email, password=pwd)
+        messages.success(request, 'Registration successful.')
+        return redirect('login')
+    
+    return render(request, 'register.html')
+
+
+def user_login(request):
+    if request.method == 'POST':
+        uname = request.POST['username']
+        pwd = request.POST['password']
+        try:
+            user = User.objects.get(username=uname, password=pwd)
+            request.session['user_id'] = user.id
+            request.session['username'] = user.username
+            return redirect('home')
+        except User.DoesNotExist:
+            messages.error(request, 'Invalid credentials.')
+            return redirect('login')
+    return render(request, 'login.html')
+
+
+def user_logout(request):
+    request.session.flush()
+    return redirect('login')
+
+
+STEP 5: HTML TEMPLATES
+Inside accounts/, create a templates/accounts/ folder.
+
+home.html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+  {% if request.session.username %}
+    <h2>Welcome, {{ request.session.username }}!</h2>
+    <a href="{% url 'logout' %}">Logout</a>
+  {% else %}
+    <h2>You are not logged in.</h2>
+    <a href="{% url 'login' %}">Login</a> | 
+    <a href="{% url 'register' %}">Register</a>
+  {% endif %}
+</body>
+</html>
+
+
+register.html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+</head>
+<body>
+  <h2>Register</h2>
+  {% for message in messages %}
+    <p style="color:red;">{{ message }}</p>
+  {% endfor %}
+  <form method="POST">
+    {% csrf_token %}
+    Username: <input type="text" name="username" required><br><br>
+    Email: <input type="email" name="email" required><br><br>
+    Password: <input type="password" name="password" required><br><br>
+    <input type="submit" value="Register">
+  </form>
+  <p>Already registered? <a href="{% url 'login' %}">Login here</a>.</p>
+</body>
+</html>
+
+
+login.html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+  <h2>Login</h2>
+  {% for message in messages %}
+    <p style="color:red;">{{ message }}</p>
+  {% endfor %}
+  <form method="POST">
+    {% csrf_token %}
+    Username: <input type="text" name="username" required><br><br>
+    Password: <input type="password" name="password" required><br><br>
+    <input type="submit" value="Login">
+  </form>
+  <p>Don't have an account? <a href="{% url 'register' %}">Register here</a>.</p>
+</body>
+</html>
+
+
+STEP 6: RUN SERVER
+
+python manage.py runserver
+Visit http://127.0.0.1:8000/register/ to register
+Login using /login/
+
+Home page shows welcome message
+
+
+
+Add basic css styling
+
+STEP 1: CREATE STATIC FOLDER FOR CSS
+In your accounts app:
+
+Create the static folder in your app:
+in static/css/style.css type
+
+style.css (paste this):
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f1f1f1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    width: 350px;
+}
+
+h2 {
+    text-align: center;
+    color: #333333;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+input[type="submit"] {
+    width: 100%;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+input[type="submit"]:hover {
+    background-color: #218838;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    margin-top: 12px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.message {
+    color: red;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+STEP 2: LOAD STATIC FILES IN HTML
+
+Add {% load static %} and link the CSS in all templates:
+
+register.html
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+  <div class="container">
+    <h2>Register</h2>
+    {% for message in messages %}
+      <div class="message">{{ message }}</div>
+    {% endfor %}
+    <form method="POST">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <input type="submit" value="Register">
+    </form>
+    <a href="{% url 'login' %}">Already have an account? Login</a>
+  </div>
+</body>
+</html>
+
+
+login.html
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+  <div class="container">
+    <h2>Login</h2>
+    {% for message in messages %}
+      <div class="message">{{ message }}</div>
+    {% endfor %}
+    <form method="POST">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <input type="submit" value="Login">
+    </form>
+    <a href="{% url 'register' %}">Don't have an account? Register</a>
+  </div>
+</body>
+</html>
+
+
+home.html
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+  <div class="container">
+    {% if request.session.username %}
+      <h2>Welcome, {{ request.session.username }}!</h2>
+      <a href="{% url 'logout' %}">Logout</a>
+    {% else %}
+      <h2>You are not logged in.</h2>
+      <a href="{% url 'login' %}">Login</a>
+      <a href="{% url 'register' %}">Register</a>
+    {% endif %}
+  </div>
+</body>
+</html>
+
+STEP 3: ENABLE STATIC FILES (if not already done)
+
+STEP 4: RUN SERVER
+
+python manage.py runserver

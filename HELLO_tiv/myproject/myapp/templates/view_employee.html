@@ -11,7 +11,7 @@
 <th>LastName</th>
 <th>Mobile</th>
 <th>Email</th>
-<th>Edit</th>
+<th>Update</th>
 <th>Delete</th>
 </tr>
 {%  for  x  in  data  %}
@@ -21,8 +21,15 @@
 <td>{{x.last_name}}</td>
 <td>{{x.mobile}}</td>
 <td>{{x.email}}</td>
-<td> Edit </td>
-<td>Delete</td>
+
+<td>
+<a href="{%  url  'update_employee'   pk=x.id  %}">    Update </a>
+</td>
+<td>
+<a href='{% url 'delete_employee' pk=x.id %}">
+Delete
+</a>
+</td>
 </tr>
 {% endfor %}
 </table>
