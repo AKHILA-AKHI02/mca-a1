@@ -1,0 +1,467 @@
+Django Event Management System 
+
+✅ Modules
+Organizers (admin login)
+Venues
+Events (linked to venue and organizer)
+Participants
+Registration (for events)
+Check-in & reports
+
+🧱 Step-by-Step Code
+🧾 Step 1: Create Project and App
+In terminal:
+
+django-admin startproject event_project
+cd event_project
+python manage.py startapp eventapp
+
+⚙️ Step 2: Register App in settings.py
+
+INSTALLED_APPS = [
+    ...
+    'eventapp',
+    'django.contrib.staticfiles',
+]
+
+TEMPLATES[0]['DIRS'] = [BASE_DIR / "templates"]
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+🗂️ Step 3: Create Models
+In eventapp/models.py:
+
+
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone
+
+class Organizer(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    organization_name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.user.username} ({self.organization_name})"
+
+class Venue(models.Model):
+    name = models.CharField(max_length=100)
+    address = models.TextField()
+    city = models.CharField(max_length=50)
+    capacity = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.name} - {self.city}"
+
+class Event(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    venue = models.ForeignKey(Venue, on_delete=models.CASCADE)
+    organizer = models.ForeignKey(Organizer, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return self.name
+
+class Participant(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15, blank=True)
+
+    def __str__(self):
+        return self.name
+
+class Registration(models.Model):
+    participant = models.ForeignKey(Participant, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    registered_at = models.DateTimeField(default=timezone.now)
+    checked_in = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('participant', 'event')
+
+    def __str__(self):
+        return f"{self.participant.name} -> {self.event.name}"
+
+⚙️ Step 4: Run Migrations
+
+python manage.py makemigrations
+python manage.py migrate
+
+👥 Step 5: Create Superuser
+
+python manage.py createsuperuser
+
+🧾 Step 6: Create Admin Entries (optional for now)
+In eventapp/admin.py:
+
+from django.contrib import admin
+from .models import Organizer, Venue, Event, Participant, Registration
+
+admin.site.register(Organizer)
+admin.site.register(Venue)
+admin.site.register(Event)
+admin.site.register(Participant)
+admin.site.register(Registration)
+
+📄 Step 7: Create forms.py
+
+from django import forms
+from .models import Venue, Event, Participant, Registration
+
+class VenueForm(forms.ModelForm):
+    class Meta:
+        model = Venue
+        fields = '__all__'
+
+class EventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = '__all__'
+
+class ParticipantForm(forms.ModelForm):
+    class Meta:
+        model = Participant
+        fields = '__all__'
+
+class RegistrationForm(forms.ModelForm):
+    class Meta:
+        model = Registration
+        fields = '__all__'
+
+
+🔧 Step 8: Create Views for the Event Management System
+In eventapp/views.py:
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Event, Venue, Participant, Registration, Organizer
+from .forms import EventForm, VenueForm, ParticipantForm, RegistrationForm
+
+# Event List View
+@login_required
+def event_list(request):
+    events = Event.objects.all()
+    return render(request, 'event_list.html', {'events': events})
+
+# Create Event
+@login_required
+def event_create(request):
+    form = EventForm(request.POST or None)
+    if form.is_valid():
+        form.save()
+        return redirect('event_list')
+    return render(request, 'event_form.html', {'form': form})
+
+# Edit Event
+@login_required
+def event_edit(request, pk):
+    event = get_object_or_404(Event, pk=pk)
+    form = EventForm(request.POST or None, instance=event)
+    if form.is_valid():
+        form.save()
+        return redirect('event_list')
+    return render(request, 'event_form.html', {'form': form})
+
+# Delete Event
+@login_required
+def event_delete(request, pk):
+    event = get_object_or_404(Event, pk=pk)
+    if request.method == 'POST':
+        event.delete()
+        return redirect('event_list')
+    return render(request, 'confirm_delete.html', {'object': event, 'type': 'Event'})
+
+# Register Participant
+@login_required
+def register_participant(request):
+    form = RegistrationForm(request.POST or None)
+    if form.is_valid():
+        form.save()
+        return redirect('event_list')
+    return render(request, 'registration_form.html', {'form': form})
+
+# Show Registrations
+@login_required
+def registration_list(request):
+    registrations = Registration.objects.select_related('participant', 'event')
+    return render(request, 'registration_list.html', {'registrations': registrations})
+
+🌐 Step 9: Setup URLs
+Create eventapp/urls.py:
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.event_list, name='event_list'),
+    path('event/add/', views.event_create, name='event_create'),
+    path('event/edit/<int:pk>/', views.event_edit, name='event_edit'),
+    path('event/delete/<int:pk>/', views.event_delete, name='event_delete'),
+
+    path('register/', views.register_participant, name='register_participant'),
+    path('registrations/', views.registration_list, name='registration_list'),
+]
+
+
+Then update the main urls.py in event_project/urls.py:
+
+
+from django.contrib import admin
+from django.urls import path, include
+from django.contrib.auth import views as auth_views
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('eventapp.urls')),
+    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+]
+
+🧾 Step 10: HTML Templates
+
+1️⃣ event_list.html
+
+<!-- templates/event_list.html -->
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event List</title>
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+</head>
+<body class="container mt-5">
+    <h2>All Events</h2>
+    <a href="{% url 'event_create' %}" class="btn btn-success mb-3">+ Create Event</a>
+    <a href="{% url 'register_participant' %}" class="btn btn-primary mb-3">Register Participant</a>
+    <a href="{% url 'registration_list' %}" class="btn btn-secondary mb-3">View Registrations</a>
+    <a href="{% url 'logout' %}" class="btn btn-danger mb-3">Logout</a>
+    <table class="table table-bordered">
+        <thead>
+            <tr><th>Event</th><th>Venue</th><th>Time</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+            <tr>
+                <td>{{ event.name }}</td>
+                <td>{{ event.venue.name }}</td>
+                <td>{{ event.start_time }} - {{ event.end_time }}</td>
+                <td>
+                    <a href="{% url 'event_edit' event.id %}" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="{% url 'event_delete' event.id %}" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+
+2️⃣ event_form.html
+
+<!-- templates/event_form.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event Form</title>
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+</head>
+<body class="container mt-5">
+    <h2>Create/Edit Event</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-primary">Save</button>
+        <a href="{% url 'event_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</body>
+</html>
+
+3️⃣ registration_form.html
+
+<!-- templates/registration_form.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register Participant</title>
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+</head>
+<body class="container mt-5">
+    <h2>Register Participant to Event</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-primary">Register</button>
+        <a href="{% url 'event_list' %}" class="btn btn-secondary">Back</a>
+    </form>
+</body>
+</html>
+
+4️⃣ registration_list.html
+
+<!-- templates/registration_list.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event Registrations</title>
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+</head>
+<body class="container mt-5">
+    <h2>Registrations</h2>
+    <a href="{% url 'event_list' %}" class="btn btn-secondary mb-3">Back to Events</a>
+    <table class="table table-bordered">
+        <thead><tr><th>Participant</th><th>Event</th><th>Registered At</th><th>Checked In</th></tr></thead>
+        <tbody>
+            {% for reg in registrations %}
+            <tr>
+                <td>{{ reg.participant.name }}</td>
+                <td>{{ reg.event.name }}</td>
+                <td>{{ reg.registered_at }}</td>
+                <td>{{ reg.checked_in }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+
+5️⃣ confirm_delete.html
+
+<!-- templates/confirm_delete.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete {{ type }}</title>
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+</head>
+<body class="container mt-5">
+    <h3>Are you sure you want to delete "{{ object }}"?</h3>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger">Yes, Delete</button>
+        <a href="{% url 'event_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</body>
+</html>
+
+6️⃣ login.html
+
+<!-- templates/login.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+</head>
+<body class="container mt-5">
+    <h2>Login</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn btn-primary">Login</button>
+    </form>
+</body>
+</html>
+
+✅ Final Step: Run the Server
+
+python manage.py runserver
+Visit:
+
+http://127.0.0.1:8000/login/ – login using superuser
+
+Use the interface to add events, register participants, and manage everything.
+
+
+
+Let’s now add a report feature to the Event Management System so you can:
+
+View all registrations grouped by event
+Filter by event
+Print the report
+
+🧾 Step 11: Add Report View
+In eventapp/views.py, add the following function at the bottom:
+
+from django.db.models import Count
+
+@login_required
+def registration_report(request):
+    events = Event.objects.all()
+    selected_event_id = request.GET.get('event')
+    
+    if selected_event_id:
+        registrations = Registration.objects.filter(event_id=selected_event_id)
+    else:
+        registrations = Registration.objects.all()
+        
+    return render(request, 'registration_report.html', {
+        'events': events,
+        'registrations': registrations,
+        'selected_event_id': selected_event_id,
+    })
+
+🌐 Step 12: Add Report URL
+In eventapp/urls.py, add:
+
+path('report/', views.registration_report, name='registration_report'),
+
+🖨️ Step 13: Create registration_report.html
+Create templates/registration_report.html:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event Registration Report</title>
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+    <style>
+        @media print {
+            .noprint { display: none; }
+        }
+    </style>
+</head>
+<body class="container mt-4">
+    <h2>Registration Report</h2>
+
+    <form method="get" class="form-inline mb-3 noprint">
+        <label>Select Event:&nbsp;</label>
+        <select name="event" class="form-control mr-2">
+            <option value="">All Events</option>
+            {% for event in events %}
+                <option value="{{ event.id }}" {% if selected_event_id == event.id|stringformat:"s" %}selected{% endif %}>
+                    {{ event.name }}
+                </option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-info">Filter</button>
+        <a href="{% url 'event_list' %}" class="btn btn-secondary ml-2">Back</a>
+        <button onclick="window.print()" class="btn btn-primary ml-2">Print</button>
+    </form>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr><th>Event</th><th>Participant</th><th>Email</th><th>Phone</th><th>Registered At</th><th>Checked In</th></tr>
+        </thead>
+        <tbody>
+            {% for reg in registrations %}
+            <tr>
+                <td>{{ reg.event.name }}</td>
+                <td>{{ reg.participant.name }}</td>
+                <td>{{ reg.participant.email }}</td>
+                <td>{{ reg.participant.phone }}</td>
+                <td>{{ reg.registered_at }}</td>
+                <td>{{ reg.checked_in }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">No registrations found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+
+📌 Step 14: Link to the Report Page
+In event_list.html, add this button to the top bar:
+
+<a href="{% url 'registration_report' %}" class="btn btn-dark mb-3">View Report</a>
