@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Event, Venue, Participant, Registration, Organizer
 from .forms import EventForm, VenueForm, ParticipantForm, RegistrationForm
+from django.db.models import Count
 
 # Event List View
 @login_required
@@ -51,3 +52,18 @@ def register_participant(request):
 def registration_list(request):
     registrations = Registration.objects.select_related('participant', 'event')
     return render(request, 'registration_list.html', {'registrations': registrations})
+@login_required
+def registration_report(request):
+    events = Event.objects.all()
+    selected_event_id = request.GET.get('event')
+    
+    if selected_event_id:
+        registrations = Registration.objects.filter(event_id=selected_event_id)
+    else:
+        registrations = Registration.objects.all()
+        
+    return render(request, 'registration_report.html', {
+        'events': events,
+        'registrations': registrations,
+        'selected_event_id': selected_event_id,
+    })
